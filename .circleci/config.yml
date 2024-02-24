@@ -21,10 +21,9 @@ jobs:
       - run:
           name: Install kubectl
           command: |
-            wget -LO https://dl.k8s.io/release/v1.29.2/bin/linux/amd64/kubectl
-            chmod +x kubectl
-            mkdir -p ~/.local/bin
-            mv ./kubectl ~/.local/bin/kubectl
+            wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(wget -qO- https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
       - run:
           name: Check Kubectl version
           command: kubectl version --client
