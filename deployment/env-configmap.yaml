@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+data:
+  AWS_BUCKET: arn:aws:s3:us-east-1:952251290004:accesspoint/uda-project3-bucket
+  AWS_PROFILE: default
+  AWS_REGION: us-east-1
+  JWT_SECRET: testing
+  POSTGRES_DB: dbname
+  POSTGRES_HOST: viettq-db-prj3.cwmgb2ih8tbr.us-east-1.rds.amazonaws.com
+  URL: http://localhost.com:8080
+metadata:
+  name: env-config
+  
