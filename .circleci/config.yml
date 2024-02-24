@@ -1,0 +1,43 @@
+version: 2.1
+
+executors:
+  docker-executor:
+    docker:
+      - image: docker:19.03.12
+
+jobs:
+  build:
+    docker:
+      - image: docker:19.03.12
+    environment:
+      DOCKER_COMPOSE_VERSION: 1.23.2
+    steps:
+      - run:
+          name: Check Docker version
+          command: docker -v
+      - run:
+          name: Check Docker Compose version
+          command: docker-compose -v
+      - run:
+          name: Install Docker Compose
+          command: |
+            sudo rm /usr/local/bin/docker-compose
+            curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m) > docker-compose
+            chmod +x docker-compose
+            sudo mv docker-compose /usr/local/bin
+      - run:
+          name: Install kubectl
+          command: |
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+      - checkout
+      - run:
+          name: Build Docker containers
+          command: docker-compose -f udacity-c3-deployment/docker/docker-compose-build.yaml build --parallel
+
+workflows:
+  version: 2
+  build_workflow:
+    jobs:
+      - build
