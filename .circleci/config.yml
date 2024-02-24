@@ -3,12 +3,14 @@ version: 2.1
 executors:
   docker-executor:
     docker:
-      - image: docker:19.03.12
+      - image: docker:25.0.3
+      - image: docker/compose:1.23.2
 
 jobs:
   build:
     docker:
-      - image: docker:19.03.12
+      - image: docker:25.0.3
+      - image: docker/compose:1.23.2
     environment:
       DOCKER_COMPOSE_VERSION: 1.23.2
     steps:
