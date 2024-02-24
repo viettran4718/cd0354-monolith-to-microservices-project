@@ -4,18 +4,26 @@ executors:
   docker-executor:
     docker:
       - image: docker:25.0.3
-      - image: docker/compose:1.23.2
 
 jobs:
   build:
     docker:
       - image: docker:25.0.3
-    environment:
-      DOCKER_COMPOSE_VERSION: 1.23.2
+        environment:
+          DOCKER_COMPOSE_VERSION: 1.23.2
     steps:
       - run:
           name: Check Docker version
           command: docker -v
+      - run:
+          name: Check Docker Compose version
+          command: docker-compose -v
+      - run:
+          name: Install kubectl
+          command: |
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
       - run:
           name: Check Docker Compose version
           command: docker-compose -v
@@ -26,12 +34,6 @@ jobs:
             curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m) > docker-compose
             chmod +x docker-compose
             sudo mv docker-compose /usr/local/bin
-      - run:
-          name: Install kubectl
-          command: |
-            curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-            chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
       - checkout
       - run:
           name: Build Docker containers
