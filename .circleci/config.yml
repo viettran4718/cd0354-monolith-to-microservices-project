@@ -1,50 +1,49 @@
 version: 2.1
 
-executors:
-  docker-executor:
-    docker:
-      - image: docker
-
 jobs:
-  build:
+  lint-app:
     docker:
-      - image: docker
-        environment:
-          DOCKER_COMPOSE_VERSION: 1.23.2
+      - image: circleci/node:16
     steps:
-      - run:
-          name: Check Docker version
-          command: docker -v
-      - run:
-          name: Check Docker Compose version
-          command: docker-compose -v
-      - run:
-          name: Install kubectl
-          command: |
-            wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(wget -qO- https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-            chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
-      - run:
-          name: Check Kubectl version
-          command: kubectl version --client
-      - run:
-          name: Install Docker Compose
-          command: |
-            sudo rm /usr/local/bin/docker-compose
-            wget -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m) > docker-compose
-            chmod +x docker-compose
-            sudo mv docker-compose /usr/local/bin
-      - run:
-          name: Check Docker Compose version
-          command: docker-compose -v
-      
       - checkout
-      - run:
-          name: Build Docker containers
-          command: docker-compose -f udacity-c3-deployment/docker/docker-compose-build.yaml build --parallel
+  build-docker:
+    machine: true
+    steps:
+     - checkout
+     - run:
+          name: Build docker container for each microservices
+          command: |
+            curl -fsSl https://deb.nodesource.com/setup_16.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+            node -v
+            npm -v
+            docker-compose -f docker-compose-build.yaml build --parallel
+            
+            docker tag udagram-api-feed:v1a $DOCKER_USERNAME/udagram-api-feed:v1
+
+            docker tag udagram-api-user:v1a $DOCKER_USERNAME/udagram-api-user:v1
+
+            docker tag udagram-frontend:local $DOCKER_USERNAME/udagram-frontend:v1
+
+            docker tag udagram-reverseproxy:v1a $DOCKER_USERNAME/udagram-reverseproxy:v1
+
+            echo "-----------All images successfully built-----------"
+
+            echo "-----------login in to hub--------------"
+
+            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
+            echo "----------Pushing images to dockerhub----------"
+
+            docker push $DOCKER_USERNAME/udagram-api-feed:v1
+            docker push $DOCKER_USERNAME/udagram-api-user:v1
+            docker push $DOCKER_USERNAME/udagram-frontend:v1
+            docker push $DOCKER_USERNAME/udagram-reverseproxy:v1
 
 workflows:
-  version: 2
-  build_workflow:
+  default:
     jobs:
-      - build
+      - lint-app
+      - build-docker:
+          requires: [lint-app]
+    
