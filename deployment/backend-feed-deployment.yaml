@@ -20,8 +20,10 @@ spec:
         imagePullPolicy: Always 
         resources:
           requests:
+            memory: "64Mi"
             cpu: "250m"
           limits:
+            memory: "1024Mi"
             cpu: "500m"                  
         env:
         - name: URL
@@ -73,12 +75,8 @@ spec:
         - name: aws-secret
           mountPath: "/root/.aws/"
           readOnly: true        
-      tolerations:
-      - key: "node.kubernetes.io/unreachable"
-        operator: "Exists"
-        effect: "NoSchedule"
       restartPolicy: Always
       volumes:
       - name: aws-secret
         secret:
-          secretName: aws-secret    
+          secretName: aws-secret
